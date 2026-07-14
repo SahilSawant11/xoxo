@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Xoxo.Api/Xoxo.Api.csproj" />
+  <Project Path="Xoxo.Domain/Xoxo.Domain.csproj" />
+  <Project Path="Xoxo.Infrastructure/Xoxo.Infrastructure.csproj" />
+</Solution>

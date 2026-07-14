@@ -1,0 +1,11 @@
+/Users/sahil/xoxo/Xoxo.Domain/bin/Debug/net10.0/Xoxo.Domain.deps.json
+/Users/sahil/xoxo/Xoxo.Domain/bin/Debug/net10.0/Xoxo.Domain.dll
+/Users/sahil/xoxo/Xoxo.Domain/bin/Debug/net10.0/Xoxo.Domain.pdb
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.AssemblyInfoInputs.cache
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.AssemblyInfo.cs
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.csproj.CoreCompileInputs.cache
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.dll
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/refint/Xoxo.Domain.dll
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/Xoxo.Domain.pdb
+/Users/sahil/xoxo/Xoxo.Domain/obj/Debug/net10.0/ref/Xoxo.Domain.dll

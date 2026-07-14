@@ -1,0 +1,14 @@
+/Users/sahil/xoxo/Xoxo.Infrastructure/bin/Debug/net10.0/Xoxo.Infrastructure.deps.json
+/Users/sahil/xoxo/Xoxo.Infrastructure/bin/Debug/net10.0/Xoxo.Infrastructure.runtimeconfig.json
+/Users/sahil/xoxo/Xoxo.Infrastructure/bin/Debug/net10.0/Xoxo.Infrastructure.dll
+/Users/sahil/xoxo/Xoxo.Infrastructure/bin/Debug/net10.0/Xoxo.Infrastructure.pdb
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.csproj.AssemblyReference.cache
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.AssemblyInfoInputs.cache
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.AssemblyInfo.cs
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.csproj.CoreCompileInputs.cache
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.dll
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/refint/Xoxo.Infrastructure.dll
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.pdb
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.genruntimeconfig.cache
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/ref/Xoxo.Infrastructure.dll
