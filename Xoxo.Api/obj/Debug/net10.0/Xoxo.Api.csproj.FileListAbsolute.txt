@@ -77,3 +77,4 @@
 /Users/sahil/xoxo/Xoxo.Api/bin/Debug/net10.0/runtimes/win-x86/native/Microsoft.Data.SqlClient.SNI.dll
 /Users/sahil/xoxo/Xoxo.Api/bin/Debug/net10.0/Xoxo.Infrastructure.dll
 /Users/sahil/xoxo/Xoxo.Api/bin/Debug/net10.0/Xoxo.Infrastructure.pdb
+/Users/sahil/xoxo/Xoxo.Api/obj/Debug/net10.0/Xoxo.Api.sourcelink.json

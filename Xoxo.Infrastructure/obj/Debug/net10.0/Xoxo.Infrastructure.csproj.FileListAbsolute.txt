@@ -12,3 +12,4 @@
 /Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.pdb
 /Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.genruntimeconfig.cache
 /Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/ref/Xoxo.Infrastructure.dll
+/Users/sahil/xoxo/Xoxo.Infrastructure/obj/Debug/net10.0/Xoxo.Infrastructure.sourcelink.json

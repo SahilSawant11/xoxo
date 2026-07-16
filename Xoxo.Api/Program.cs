@@ -72,6 +72,7 @@ app.MapPost("/api/sales", async (CreateSaleRequest request, AppDbContext db) =>
     {
         Id = Guid.NewGuid(),
         SalesBillId = billId,
+        MaterialId = item.MaterialId,
         BarcodeNo = item.BarcodeNo,
         MaterialType = item.MaterialType,
         MaterialName = item.MaterialName,
@@ -92,11 +93,134 @@ app.MapPost("/api/sales", async (CreateSaleRequest request, AppDbContext db) =>
 
     db.SalesBills.Add(bill);
     db.SaleLineItems.AddRange(lineItems);
+
+    foreach (var item in request.LineItems.Where(i => i.MaterialId is not null))
+    {
+        var stock = await db.InventoryStocks
+            .Where(s => s.MaterialId == item.MaterialId)
+            .OrderByDescending(s => s.QtyOnHand)
+            .FirstOrDefaultAsync();
+
+        if (stock is not null)
+        {
+            stock.QtyOnHand -= item.Quantity;
+            stock.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
     await db.SaveChangesAsync();
 
     return Results.Created($"/api/sales/{bill.Id}", new { bill.Id, bill.BillNo, LineItemCount = lineItems.Count });
 })
 .WithName("CreateSale");
+
+app.MapGet("/api/suppliers", async (AppDbContext db) =>
+{
+    var suppliers = await db.Suppliers.ToListAsync();
+    return Results.Ok(suppliers);
+})
+.WithName("GetSuppliers");
+
+app.MapPost("/api/purchases", async (CreatePurchaseRequest request, AppDbContext db) =>
+{
+    var billId = Guid.NewGuid();
+
+    var bill = new PurchaseBill
+    {
+        Id = billId,
+        BillNo = request.BillNo,
+        SupplierId = request.SupplierId,
+        ChallanNo = request.ChallanNo,
+        NoteNo = request.NoteNo,
+        PayMode = request.PayMode,
+        TpNo = request.TpNo,
+        TpDate = request.TpDate,
+        StNo = request.StNo,
+        Discount = request.Discount,
+        Vat = request.Vat,
+        Stamp = request.Stamp,
+        Tcs = request.Tcs,
+        LoadingFreight = request.LoadingFreight,
+        NetAmount = request.NetAmount,
+        TotalAmount = request.TotalAmount,
+        BillDate = DateOnly.FromDateTime(DateTime.UtcNow),
+        Status = "saved",
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow,
+        IsSynced = false,
+        IsDeleted = false
+    };
+
+    var lineNo = 1;
+    var lineItems = request.LineItems.Select(item => new PurchaseLineItem
+    {
+        Id = Guid.NewGuid(),
+        PurchaseBillId = billId,
+        MaterialId = item.MaterialId,
+        BatchNo = item.BatchNo,
+        Packing = item.Packing,
+        Qty = item.Qty,
+        Rate = item.Rate,
+        DisPercent = item.DisPercent,
+        DisAmount = item.DisAmount,
+        TaxPercent = item.TaxPercent,
+        TaxAmount = item.TaxAmount,
+        Amount = item.Amount,
+        LineNumber = lineNo++,
+        CreatedAt = DateTime.UtcNow
+    }).ToList();
+
+    db.PurchaseBills.Add(bill);
+    db.PurchaseLineItems.AddRange(lineItems);
+
+    foreach (var item in request.LineItems)
+    {
+        var stock = await db.InventoryStocks.FirstOrDefaultAsync(
+            s => s.MaterialId == item.MaterialId && s.BatchNo == item.BatchNo);
+
+        if (stock is null)
+        {
+            stock = new InventoryStock
+            {
+                Id = Guid.NewGuid(),
+                MaterialId = item.MaterialId,
+                BatchNo = item.BatchNo,
+                QtyOnHand = 0,
+                ReorderLevel = 10,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.InventoryStocks.Add(stock);
+        }
+
+        stock.QtyOnHand += item.Qty;
+        stock.UpdatedAt = DateTime.UtcNow;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/purchases/{bill.Id}", new { bill.Id, bill.BillNo, LineItemCount = lineItems.Count });
+})
+.WithName("CreatePurchase");
+
+app.MapGet("/api/inventory", async (AppDbContext db) =>
+{
+    var stock = await db.InventoryStocks.Include(s => s.Material).ToListAsync();
+
+    var grouped = stock
+        .GroupBy(s => s.MaterialId)
+        .Select(g => new
+        {
+            materialId = g.Key,
+            barcode = g.First().Material.Barcode,
+            name = g.First().Material.Name,
+            category = g.First().Material.Category,
+            qtyOnHand = g.Sum(x => x.QtyOnHand),
+            reorderLevel = g.Min(x => x.ReorderLevel)
+        });
+
+    return Results.Ok(grouped);
+})
+.WithName("GetInventory");
 
 app.Run();
 
@@ -113,6 +237,7 @@ record CreateSaleRequest(
 );
 
 record CreateSaleLineItemRequest(
+    Guid? MaterialId,
     string BarcodeNo,
     string MaterialType,
     string MaterialName,
@@ -122,6 +247,38 @@ record CreateSaleLineItemRequest(
     decimal Rate,
     decimal DiscountPercent,
     decimal DiscountAmount,
+    decimal TaxPercent,
+    decimal TaxAmount,
+    decimal Amount
+);
+
+record CreatePurchaseRequest(
+    Guid SupplierId,
+    string? BillNo,
+    string? ChallanNo,
+    string? NoteNo,
+    string PayMode,
+    string? TpNo,
+    DateOnly? TpDate,
+    string? StNo,
+    decimal Discount,
+    decimal Vat,
+    decimal Stamp,
+    decimal Tcs,
+    decimal LoadingFreight,
+    decimal NetAmount,
+    decimal TotalAmount,
+    List<CreatePurchaseLineItemRequest> LineItems
+);
+
+record CreatePurchaseLineItemRequest(
+    Guid MaterialId,
+    string BatchNo,
+    string? Packing,
+    int Qty,
+    decimal Rate,
+    decimal DisPercent,
+    decimal DisAmount,
     decimal TaxPercent,
     decimal TaxAmount,
     decimal Amount

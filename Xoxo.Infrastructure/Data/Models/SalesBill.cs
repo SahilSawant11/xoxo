@@ -39,6 +39,5 @@ public partial class SalesBill
 
     public virtual Customer? Customer { get; set; }
 
-    public virtual ICollection<SaleLineItem>? SaleLineItems { get; set; }
-    
+    public virtual ICollection<SaleLineItem> SaleLineItems { get; set; } = new List<SaleLineItem>();
 }
