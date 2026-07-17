@@ -41,7 +41,7 @@ public partial class SaleLineItem
 
     public bool? IsDeleted { get; set; }
 
-    public Guid? MaterialId { get; set; }
+    public string? MaterialId { get; set; }
 
     public virtual Material? Material { get; set; }
 

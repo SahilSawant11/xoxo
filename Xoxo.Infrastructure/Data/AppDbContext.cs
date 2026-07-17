@@ -61,29 +61,32 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.BatchNo)
                 .HasMaxLength(30)
                 .HasDefaultValue("-");
+            entity.Property(e => e.MaterialId).HasMaxLength(20);
             entity.Property(e => e.ReorderLevel).HasDefaultValue(10);
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Material).WithMany(p => p.InventoryStocks)
                 .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Inventory__Mater__6E01572D");
+                .HasConstraintName("FK_InventoryStock_Materials");
         });
 
         modelBuilder.Entity<Material>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Material__3214EC07B523BEB8");
+            entity.HasKey(e => e.Id).HasName("PK__Material__3214EC075BE00FE4");
 
             entity.HasIndex(e => e.Barcode, "UQ_Materials_Barcode").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Id).HasMaxLength(20);
             entity.Property(e => e.Barcode).HasMaxLength(50);
             entity.Property(e => e.Category).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Packing).HasMaxLength(50);
             entity.Property(e => e.SaleRate).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.TaxPercent).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.TaxPercent)
+                .HasDefaultValue(5m)
+                .HasColumnType("decimal(5, 2)");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
         });
 
@@ -134,6 +137,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.DisAmount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.DisPercent).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.MaterialId).HasMaxLength(20);
             entity.Property(e => e.Packing).HasMaxLength(50);
             entity.Property(e => e.Rate).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.TaxAmount).HasColumnType("decimal(10, 2)");
@@ -142,7 +146,7 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Material).WithMany(p => p.PurchaseLineItems)
                 .HasForeignKey(d => d.MaterialId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PurchaseL__Mater__07C12930");
+                .HasConstraintName("FK_PurchaseLineItems_Materials");
 
             entity.HasOne(d => d.PurchaseBill).WithMany(p => p.PurchaseLineItems)
                 .HasForeignKey(d => d.PurchaseBillId)
@@ -171,6 +175,7 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(5, 2)");
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+            entity.Property(e => e.MaterialId).HasMaxLength(20);
             entity.Property(e => e.MaterialName)
                 .HasMaxLength(200)
                 .IsUnicode(false);

@@ -237,7 +237,7 @@ record CreateSaleRequest(
 );
 
 record CreateSaleLineItemRequest(
-    Guid? MaterialId,
+    string? MaterialId,
     string BarcodeNo,
     string MaterialType,
     string MaterialName,
@@ -272,7 +272,7 @@ record CreatePurchaseRequest(
 );
 
 record CreatePurchaseLineItemRequest(
-    Guid MaterialId,
+    string MaterialId,
     string BatchNo,
     string? Packing,
     int Qty,

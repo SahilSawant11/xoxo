@@ -5,7 +5,7 @@ namespace Xoxo.Infrastructure.Data.Models;
 
 public partial class Material
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } = null!;
 
     public string Barcode { get; set; } = null!;
 

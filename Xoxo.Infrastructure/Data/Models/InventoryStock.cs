@@ -7,7 +7,7 @@ public partial class InventoryStock
 {
     public Guid Id { get; set; }
 
-    public Guid MaterialId { get; set; }
+    public string MaterialId { get; set; } = null!;
 
     public string BatchNo { get; set; } = null!;
 

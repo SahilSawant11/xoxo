@@ -9,7 +9,7 @@ public partial class PurchaseLineItem
 
     public Guid PurchaseBillId { get; set; }
 
-    public Guid MaterialId { get; set; }
+    public string MaterialId { get; set; } = null!;
 
     public string BatchNo { get; set; } = null!;
 
