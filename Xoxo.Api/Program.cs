@@ -222,6 +222,48 @@ app.MapGet("/api/inventory", async (AppDbContext db) =>
 })
 .WithName("GetInventory");
 
+// GET /api/reports/sales?from=2026-07-01&to=2026-07-15
+// Powers all 3 Reports tabs — Day-wise/Monthly/Custom just send
+// different from/to values computed client-side.
+app.MapGet("/api/reports/sales", async (DateOnly from, DateOnly to, AppDbContext db) =>
+{
+    var bills = await db.SalesBills
+        .Include(b => b.SaleLineItems)
+        .Where(b => b.BillDate >= from && b.BillDate <= to && !b.IsDeleted)
+        .ToListAsync();
+
+    var lineItems = bills
+        .SelectMany(b => b.SaleLineItems.Select(li => new
+        {
+            billNo = b.BillNo,
+            billDate = b.BillDate,
+            materialId = li.MaterialId,
+            materialName = li.MaterialName,
+            packing = li.Packing,
+            quantity = li.Quantity,
+            rate = li.Rate,
+            amount = li.Amount
+        }))
+        .OrderByDescending(x => x.billDate)
+        .ToList();
+
+    var summary = new
+    {
+        fromDate = from,
+        toDate = to,
+        totalBills = bills.Count,
+        totalLineItems = lineItems.Count,
+        totalQty = lineItems.Sum(x => x.quantity),
+        totalAmount = bills.Sum(b => b.TotalAmount),
+        totalTax = bills.Sum(b => b.TotalTax),
+        distinctBrands = lineItems.Select(x => x.materialName).Distinct().Count(),
+        lineItems
+    };
+
+    return Results.Ok(summary);
+})
+.WithName("GetSalesReport");
+
 app.Run();
 
 record CreateSaleRequest(
