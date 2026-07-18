@@ -43,6 +43,8 @@ public partial class SaleLineItem
 
     public string? MaterialId { get; set; }
 
+    public int QtyCase { get; set; }
+
     public virtual Material? Material { get; set; }
 
     public virtual SalesBill SalesBill { get; set; } = null!;

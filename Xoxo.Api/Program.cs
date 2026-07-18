@@ -79,6 +79,7 @@ app.MapPost("/api/sales", async (CreateSaleRequest request, AppDbContext db) =>
         BatchNo = item.BatchNo,
         Packing = item.Packing,
         Quantity = item.Quantity,
+        QtyCase = item.QtyCase,
         Rate = item.Rate,
         DiscountPercent = item.DiscountPercent,
         DiscountAmount = item.DiscountAmount,
@@ -222,9 +223,10 @@ app.MapGet("/api/inventory", async (AppDbContext db) =>
 })
 .WithName("GetInventory");
 
-// GET /api/reports/sales?from=2026-07-01&to=2026-07-15
-// Powers all 3 Reports tabs — Day-wise/Monthly/Custom just send
-// different from/to values computed client-side.
+// GET /api/reports/sales?from=2026-06-15&to=2026-07-17
+// Matches the client's real DailySaleReport shape: one row per
+// material (aggregated across all bills in range), not one row
+// per transaction.
 app.MapGet("/api/reports/sales", async (DateOnly from, DateOnly to, AppDbContext db) =>
 {
     var bills = await db.SalesBills
@@ -232,32 +234,33 @@ app.MapGet("/api/reports/sales", async (DateOnly from, DateOnly to, AppDbContext
         .Where(b => b.BillDate >= from && b.BillDate <= to && !b.IsDeleted)
         .ToListAsync();
 
-    var lineItems = bills
-        .SelectMany(b => b.SaleLineItems.Select(li => new
-        {
-            billNo = b.BillNo,
-            billDate = b.BillDate,
-            materialId = li.MaterialId,
-            materialName = li.MaterialName,
-            packing = li.Packing,
-            quantity = li.Quantity,
-            rate = li.Rate,
-            amount = li.Amount
-        }))
-        .OrderByDescending(x => x.billDate)
-        .ToList();
+    var allLines = bills.SelectMany(b => b.SaleLineItems).ToList();
+
+    var items = allLines
+    .GroupBy(li => new { li.BarcodeNo, li.MaterialName, li.Packing })
+    .Select(g => new
+    {
+        materialId = g.Key.BarcodeNo,   // barcode == LocalItemCode, and it's always non-null
+        materialName = g.Key.MaterialName,
+        packing = g.Key.Packing,
+        qtyCase = g.Sum(x => x.QtyCase),
+        qtyLoose = g.Sum(x => x.Quantity),
+        amount = g.Sum(x => x.Amount)
+    })
+    .OrderBy(x => x.materialName)
+    .ToList();
 
     var summary = new
     {
         fromDate = from,
         toDate = to,
         totalBills = bills.Count,
-        totalLineItems = lineItems.Count,
-        totalQty = lineItems.Sum(x => x.quantity),
+        distinctBrands = items.Count,
+        totalQtyCase = items.Sum(x => x.qtyCase),
+        totalQtyLoose = items.Sum(x => x.qtyLoose),
         totalAmount = bills.Sum(b => b.TotalAmount),
         totalTax = bills.Sum(b => b.TotalTax),
-        distinctBrands = lineItems.Select(x => x.materialName).Distinct().Count(),
-        lineItems
+        items
     };
 
     return Results.Ok(summary);
@@ -279,6 +282,7 @@ record CreateSaleRequest(
 );
 
 record CreateSaleLineItemRequest(
+    
     string? MaterialId,
     string BarcodeNo,
     string MaterialType,
@@ -286,6 +290,7 @@ record CreateSaleLineItemRequest(
     string? BatchNo,
     string? Packing,
     int Quantity,
+    int QtyCase,
     decimal Rate,
     decimal DiscountPercent,
     decimal DiscountAmount,
@@ -293,7 +298,6 @@ record CreateSaleLineItemRequest(
     decimal TaxAmount,
     decimal Amount
 );
-
 record CreatePurchaseRequest(
     Guid SupplierId,
     string? BillNo,
