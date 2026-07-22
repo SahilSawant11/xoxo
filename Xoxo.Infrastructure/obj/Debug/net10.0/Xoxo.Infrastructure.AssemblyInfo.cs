@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Xoxo.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a1816344fd05f47ddb313ed2cc6bca06b554436d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e0087099ea1eeb18d509e1d8e2d291e35908026")]
 [assembly: System.Reflection.AssemblyProductAttribute("Xoxo.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Xoxo.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

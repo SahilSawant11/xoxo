@@ -31,7 +31,7 @@ app.MapGet("/api/sales/today", async (AppDbContext db) =>
 
 app.MapGet("/api/materials/{barcode}", async (string barcode, AppDbContext db) =>
 {
-    var material = await db.Materials.FirstOrDefaultAsync(m => m.Barcode == barcode);
+    var material = await db.Materials.FirstOrDefaultAsync(m => m.Barcode == barcode || m.Id == barcode);
     return material is not null ? Results.Ok(material) : Results.NotFound();
 })
 .WithName("GetMaterialByBarcode");
@@ -267,6 +267,64 @@ app.MapGet("/api/reports/sales", async (DateOnly from, DateOnly to, AppDbContext
 })
 .WithName("GetSalesReport");
 
+// GET /api/materials — full list, powers Material Master's Prev/Next browsing
+app.MapGet("/api/materials", async (AppDbContext db) =>
+{
+    var materials = await db.Materials.OrderBy(m => m.Name).ToListAsync();
+    return Results.Ok(materials);
+})
+.WithName("GetMaterials");
+
+// POST /api/materials — Id is the LocalItemCode itself, supplied by
+// the person (not server-generated, since it's the client's own
+// business key). Rejects duplicates.
+app.MapPost("/api/materials", async (SaveMaterialRequest request, AppDbContext db) =>
+{
+    var exists = await db.Materials.AnyAsync(m => m.Id == request.Id);
+    if (exists) return Results.Conflict(new { message = $"Material code '{request.Id}' already exists." });
+
+    var material = new Material
+    {
+        Id = request.Id,
+        Barcode = string.IsNullOrWhiteSpace(request.Barcode) ? request.Id : request.Barcode,
+        Name = request.Name,
+        Category = request.Category,
+        Packing = request.Packing,
+        SaleRate = request.SaleRate,
+        TaxPercent = request.TaxPercent,
+        StockQty = 0,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    db.Materials.Add(material);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/materials/{material.Id}", material);
+})
+.WithName("CreateMaterial");
+
+// PUT /api/materials/{id} — the code itself (Id) can't be changed
+// once created, since it's the primary key everything else links to.
+app.MapPut("/api/materials/{id}", async (string id, SaveMaterialRequest request, AppDbContext db) =>
+{
+    var material = await db.Materials.FindAsync(id);
+    if (material is null) return Results.NotFound();
+
+    material.Barcode = string.IsNullOrWhiteSpace(request.Barcode) ? material.Barcode : request.Barcode;
+    material.Name = request.Name;
+    material.Category = request.Category;
+    material.Packing = request.Packing;
+    material.SaleRate = request.SaleRate;
+    material.TaxPercent = request.TaxPercent;
+    material.UpdatedAt = DateTime.UtcNow;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(material);
+})
+.WithName("UpdateMaterial");
+
 app.Run();
 
 record CreateSaleRequest(
@@ -328,4 +386,14 @@ record CreatePurchaseLineItemRequest(
     decimal TaxPercent,
     decimal TaxAmount,
     decimal Amount
+);
+
+record SaveMaterialRequest(
+    string Id,
+    string? Barcode,
+    string Name,
+    string Category,
+    string Packing,
+    decimal SaleRate,
+    decimal TaxPercent
 );
