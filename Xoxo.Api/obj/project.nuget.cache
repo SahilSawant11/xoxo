@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Id2vIL9exuY=",
+  "dgSpecHash": "DNHiBx5cJxw=",
   "success": true,
-  "projectFilePath": "/Users/sahil/xoxo/Xoxo.Api/Xoxo.Api.csproj",
+  "projectFilePath": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Api/Xoxo.Api.csproj",
   "expectedPackageFiles": [
     "/Users/sahil/.nuget/packages/azure.core/1.47.1/azure.core.1.47.1.nupkg.sha512",
     "/Users/sahil/.nuget/packages/azure.identity/1.14.2/azure.identity.1.14.2.nupkg.sha512",

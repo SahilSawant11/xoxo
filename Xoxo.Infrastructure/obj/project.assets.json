@@ -3673,11 +3673,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/sahil/xoxo/Xoxo.Infrastructure/Xoxo.Infrastructure.csproj",
+      "projectUniqueName": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Infrastructure/Xoxo.Infrastructure.csproj",
       "projectName": "Xoxo.Infrastructure",
-      "projectPath": "/Users/sahil/xoxo/Xoxo.Infrastructure/Xoxo.Infrastructure.csproj",
+      "projectPath": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Infrastructure/Xoxo.Infrastructure.csproj",
       "packagesPath": "/Users/sahil/.nuget/packages/",
-      "outputPath": "/Users/sahil/xoxo/Xoxo.Infrastructure/obj/",
+      "outputPath": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/sahil/.nuget/NuGet/NuGet.Config"

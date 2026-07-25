@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/sahil/xoxo/Xoxo.Domain/Xoxo.Domain.csproj",
+      "projectUniqueName": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Domain/Xoxo.Domain.csproj",
       "projectName": "Xoxo.Domain",
-      "projectPath": "/Users/sahil/xoxo/Xoxo.Domain/Xoxo.Domain.csproj",
+      "projectPath": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Domain/Xoxo.Domain.csproj",
       "packagesPath": "/Users/sahil/.nuget/packages/",
-      "outputPath": "/Users/sahil/xoxo/Xoxo.Domain/obj/",
+      "outputPath": "/Users/sahil/RutsXoxo/xoxo/Xoxo.Domain/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/sahil/.nuget/NuGet/NuGet.Config"
