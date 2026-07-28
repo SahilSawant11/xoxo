@@ -122,6 +122,53 @@ app.MapGet("/api/suppliers", async (AppDbContext db) =>
 })
 .WithName("GetSuppliers");
 
+app.MapPost("/api/suppliers", async (SaveSupplierRequest request, AppDbContext db) =>
+{
+    var supplier = new Supplier
+    {
+        Id = Guid.NewGuid(),
+        Name = request.Name,
+        Address = request.Address,
+        ContactNo = request.ContactNo,
+        Email = request.Email,
+        VatNo = request.VatNo,
+        BankDetails = request.BankDetails,
+        DisPercent = request.DisPercent,
+        OpeningBalance = request.OpeningBalance,
+        BalanceType = request.BalanceType,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    db.Suppliers.Add(supplier);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/suppliers/{supplier.Id}", supplier);
+})
+.WithName("CreateSupplier");
+
+app.MapPut("/api/suppliers/{id}", async (Guid id, SaveSupplierRequest request, AppDbContext db) =>
+{
+    var supplier = await db.Suppliers.FindAsync(id);
+    if (supplier is null) return Results.NotFound();
+
+    supplier.Name = request.Name;
+    supplier.Address = request.Address;
+    supplier.ContactNo = request.ContactNo;
+    supplier.Email = request.Email;
+    supplier.VatNo = request.VatNo;
+    supplier.BankDetails = request.BankDetails;
+    supplier.DisPercent = request.DisPercent;
+    supplier.OpeningBalance = request.OpeningBalance;
+    supplier.BalanceType = request.BalanceType;
+    supplier.UpdatedAt = DateTime.UtcNow;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(supplier);
+})
+.WithName("UpdateSupplier");
+
 app.MapPost("/api/purchases", async (CreatePurchaseRequest request, AppDbContext db) =>
 {
     var billId = Guid.NewGuid();
@@ -516,4 +563,16 @@ record SaveMaterialRequest(
     string Packing,
     decimal SaleRate,
     decimal TaxPercent
+);
+
+record SaveSupplierRequest(
+    string Name,
+    string? Address,
+    string? ContactNo,
+    string? Email,
+    string? VatNo,
+    string? BankDetails,
+    decimal DisPercent,
+    decimal OpeningBalance,
+    string BalanceType
 );
