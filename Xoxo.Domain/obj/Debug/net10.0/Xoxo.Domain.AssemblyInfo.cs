@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Xoxo.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+453b133a68e05200980dea9553eaf3dcf4fedb76")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8152a6b6baa6e2545a38ea7781658cbd22e7aff9")]
 [assembly: System.Reflection.AssemblyProductAttribute("Xoxo.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Xoxo.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
