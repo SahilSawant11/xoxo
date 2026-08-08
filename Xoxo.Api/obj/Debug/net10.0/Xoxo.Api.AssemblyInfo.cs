@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Xoxo.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b46e669d830b924252ba6c59a834bf930e336661")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b09cbe00c11d60213eecfe4d4159817ea08286b6")]
 [assembly: System.Reflection.AssemblyProductAttribute("Xoxo.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Xoxo.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
