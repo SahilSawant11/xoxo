@@ -45,6 +45,39 @@ app.MapGet("/api/customers", async (AppDbContext db) =>
 
 app.MapPost("/api/sales", async (CreateSaleRequest request, AppDbContext db) =>
 {
+    if (request.CustomerId is Guid customerId)
+    {
+        var customerExists = await db.Customers.AnyAsync(c => c.Id == customerId);
+        if (!customerExists)
+        {
+            return Results.BadRequest(new { message = "Selected customer does not exist in the API database." });
+        }
+    }
+
+    var materialIds = request.LineItems
+        .Where(item => !string.IsNullOrWhiteSpace(item.MaterialId))
+        .Select(item => item.MaterialId!)
+        .Distinct()
+        .ToList();
+
+    if (materialIds.Count > 0)
+    {
+        var existingMaterialIds = await db.Materials
+            .Where(m => materialIds.Contains(m.Id))
+            .Select(m => m.Id)
+            .ToListAsync();
+
+        var missingMaterialIds = materialIds.Except(existingMaterialIds).ToList();
+        if (missingMaterialIds.Count > 0)
+        {
+            return Results.BadRequest(new
+            {
+                message = "One or more selected materials do not exist in the API database.",
+                materialIds = missingMaterialIds
+            });
+        }
+    }
+
     var billId = Guid.NewGuid();
 
     var bill = new SalesBill
