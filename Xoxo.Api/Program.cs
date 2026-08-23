@@ -414,11 +414,16 @@ app.MapGet("/api/dashboard/summary", async (AppDbContext db) =>
     var today = DateOnly.FromDateTime(DateTime.UtcNow);
     var yesterday = today.AddDays(-1);
     var last30Start = today.AddDays(-29);
+    var last365Start = today.AddDays(-364);
 
     var recentBills = await db.SalesBills
         .Include(b => b.SaleLineItems)
         .Include(b => b.Customer)
         .Where(b => b.BillDate >= last30Start && !b.IsDeleted)
+        .ToListAsync();
+
+    var yearlyBills = await db.SalesBills
+        .Where(b => b.BillDate >= last365Start && !b.IsDeleted)
         .ToListAsync();
 
     var todaysBills = recentBills.Where(b => b.BillDate == today).ToList();
@@ -443,6 +448,19 @@ app.MapGet("/api/dashboard/summary", async (AppDbContext db) =>
         var d = today.AddDays(-i);
         var amount = recentBills.Where(b => b.BillDate == d).Sum(b => b.TotalAmount);
         last7Days.Add(new { date = d, amount });
+    }
+
+    var transactionActivity = new List<object>();
+    for (var i = 364; i >= 0; i--)
+    {
+        var d = today.AddDays(-i);
+        var dayBills = yearlyBills.Where(b => b.BillDate == d).ToList();
+        transactionActivity.Add(new
+        {
+            date = d,
+            billCount = dayBills.Count,
+            amount = dayBills.Sum(b => b.TotalAmount)
+        });
     }
 
     var categoryBreakdown = recentBills
@@ -518,7 +536,8 @@ app.MapGet("/api/dashboard/summary", async (AppDbContext db) =>
         paymentMix,
         topSellingItems,
         recentTransactions,
-        topCustomers
+        topCustomers,
+        transactionActivity
     };
 
     return Results.Ok(summary);
