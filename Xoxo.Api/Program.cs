@@ -148,6 +148,118 @@ app.MapPost("/api/sales", async (CreateSaleRequest request, AppDbContext db) =>
 })
 .WithName("CreateSale");
 
+app.MapGet("/api/sales", async (string? search, DateOnly? date, AppDbContext db) =>
+{
+    var query = db.SalesBills
+        .Include(b => b.SaleLineItems)
+        .Include(b => b.Customer)
+        .Where(b => !b.IsDeleted);
+
+    if (date.HasValue)
+    {
+        query = query.Where(b => b.BillDate == date.Value);
+    }
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var s = search.Trim();
+        query = query.Where(b => b.BillNo.Contains(s) || (b.Customer != null && b.Customer.Name.Contains(s)));
+    }
+
+    var list = await query
+        .OrderByDescending(b => b.CreatedAt)
+        .Take(50)
+        .Select(b => new
+        {
+            b.Id,
+            b.BillNo,
+            b.CustomerId,
+            CustomerName = b.Customer != null ? b.Customer.Name : null,
+            b.BillType,
+            b.BillDate,
+            b.PayMode,
+            b.TaxableValue,
+            b.TotalDiscount,
+            b.TotalTax,
+            b.TotalAmount,
+            b.BalanceDue,
+            b.Status,
+            b.CreatedAt,
+            b.UpdatedAt,
+            SaleLineItems = b.SaleLineItems.Where(li => li.IsDeleted != true).OrderBy(li => li.LineNumber).Select(li => new
+            {
+                li.Id,
+                li.SalesBillId,
+                li.BarcodeNo,
+                li.MaterialId,
+                li.MaterialType,
+                li.MaterialName,
+                li.BatchNo,
+                li.Packing,
+                li.Quantity,
+                li.QtyCase,
+                li.Rate,
+                li.DiscountPercent,
+                li.DiscountAmount,
+                li.TaxPercent,
+                li.TaxAmount,
+                li.Amount,
+                li.LineNumber
+            }).ToList()
+        })
+        .ToListAsync();
+
+    return Results.Ok(list);
+})
+.WithName("GetSales");
+
+async Task<IResult> ReturnSaleHandler(Guid id, AppDbContext db)
+{
+    var bill = await db.SalesBills
+        .Include(b => b.SaleLineItems)
+        .FirstOrDefaultAsync(b => b.Id == id);
+
+    if (bill is null)
+    {
+        return Results.NotFound(new { message = "Sales bill not found." });
+    }
+
+    if (bill.IsDeleted)
+    {
+        return Results.BadRequest(new { message = "Sales bill is already deleted or returned." });
+    }
+
+    bill.IsDeleted = true;
+    bill.Status = "returned";
+    bill.UpdatedAt = DateTime.UtcNow;
+
+    foreach (var item in bill.SaleLineItems)
+    {
+        item.IsDeleted = true;
+        item.UpdatedAt = DateTime.UtcNow;
+
+        if (!string.IsNullOrWhiteSpace(item.MaterialId))
+        {
+            var stock = await db.InventoryStocks
+                .Where(s => s.MaterialId == item.MaterialId)
+                .OrderByDescending(s => s.QtyOnHand)
+                .FirstOrDefaultAsync();
+
+            if (stock is not null)
+            {
+                stock.QtyOnHand += item.Quantity;
+                stock.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Sales bill returned and stock restored successfully.", bill.Id, bill.BillNo });
+}
+
+app.MapDelete("/api/sales/{id}", ReturnSaleHandler).WithName("DeleteSale");
+app.MapPost("/api/sales/{id}/return", ReturnSaleHandler).WithName("ReturnSale");
+
 app.MapGet("/api/suppliers", async (AppDbContext db) =>
 {
     var suppliers = await db.Suppliers.ToListAsync();
@@ -282,6 +394,116 @@ app.MapPost("/api/purchases", async (CreatePurchaseRequest request, AppDbContext
     return Results.Created($"/api/purchases/{bill.Id}", new { bill.Id, bill.BillNo, LineItemCount = lineItems.Count });
 })
 .WithName("CreatePurchase");
+
+app.MapGet("/api/purchases", async (string? search, DateOnly? date, AppDbContext db) =>
+{
+    var query = db.PurchaseBills
+        .Include(b => b.PurchaseLineItems)
+        .ThenInclude(li => li.Material)
+        .Include(b => b.Supplier)
+        .Where(b => !b.IsDeleted);
+
+    if (date.HasValue)
+    {
+        query = query.Where(b => b.BillDate == date.Value);
+    }
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var s = search.Trim();
+        query = query.Where(b => (b.BillNo != null && b.BillNo.Contains(s)) ||
+                                 (b.ChallanNo != null && b.ChallanNo.Contains(s)) ||
+                                 b.Supplier.Name.Contains(s));
+    }
+
+    var list = await query
+        .OrderByDescending(b => b.CreatedAt)
+        .Take(50)
+        .Select(b => new
+        {
+            b.Id,
+            b.BillNo,
+            b.SupplierId,
+            SupplierName = b.Supplier.Name,
+            b.ChallanNo,
+            b.NoteNo,
+            b.PayMode,
+            b.TpNo,
+            b.TpDate,
+            b.StNo,
+            b.Discount,
+            b.Vat,
+            b.Stamp,
+            b.Tcs,
+            b.LoadingFreight,
+            b.NetAmount,
+            b.TotalAmount,
+            b.BillDate,
+            b.Status,
+            b.CreatedAt,
+            b.UpdatedAt,
+            PurchaseLineItems = b.PurchaseLineItems.OrderBy(li => li.LineNumber).Select(li => new
+            {
+                li.Id,
+                li.PurchaseBillId,
+                li.MaterialId,
+                MaterialName = li.Material != null ? li.Material.Name : li.MaterialId,
+                li.BatchNo,
+                li.Packing,
+                li.Qty,
+                li.Rate,
+                li.DisPercent,
+                li.DisAmount,
+                li.TaxPercent,
+                li.TaxAmount,
+                li.Amount,
+                li.LineNumber
+            }).ToList()
+        })
+        .ToListAsync();
+
+    return Results.Ok(list);
+})
+.WithName("GetPurchases");
+
+async Task<IResult> ReturnPurchaseHandler(Guid id, AppDbContext db)
+{
+    var bill = await db.PurchaseBills
+        .Include(b => b.PurchaseLineItems)
+        .FirstOrDefaultAsync(b => b.Id == id);
+
+    if (bill is null)
+    {
+        return Results.NotFound(new { message = "Purchase bill not found." });
+    }
+
+    if (bill.IsDeleted)
+    {
+        return Results.BadRequest(new { message = "Purchase bill is already deleted or returned." });
+    }
+
+    bill.IsDeleted = true;
+    bill.Status = "returned";
+    bill.UpdatedAt = DateTime.UtcNow;
+
+    foreach (var item in bill.PurchaseLineItems)
+    {
+        var stock = await db.InventoryStocks.FirstOrDefaultAsync(
+            s => s.MaterialId == item.MaterialId && s.BatchNo == item.BatchNo);
+
+        if (stock is not null)
+        {
+            stock.QtyOnHand -= item.Qty;
+            stock.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Purchase bill returned and stock deducted successfully.", bill.Id, bill.BillNo });
+}
+
+app.MapDelete("/api/purchases/{id}", ReturnPurchaseHandler).WithName("DeletePurchase");
+app.MapPost("/api/purchases/{id}/return", ReturnPurchaseHandler).WithName("ReturnPurchase");
 
 app.MapGet("/api/inventory", async (AppDbContext db) =>
 {
