@@ -1,0 +1,81 @@
+{
+  "items": [
+    {
+      "clientId": "local-sale-2282215e-17c6-4ce1-80b9-1123daecf3e3",
+      "entityType": "sale",
+      "operation": "create",
+      "payload": {
+        "billNo": "CS-2627-000001",
+        "customerId": null,
+        "permitNo": null,
+        "permitHolderName": null,
+        "payMode": "Cash",
+        "taxableValue": 200.0,
+        "totalDiscount": 0.0,
+        "totalTax": 0.0,
+        "totalAmount": 200.0,
+        "balanceDue": 200.0,
+        "lineItems": [
+          {
+            "materialId": "A",
+            "barcodeNo": "BC-A",
+            "materialType": "Whisky",
+            "materialName": "Item A",
+            "batchNo": null,
+            "packing": "750 ML",
+            "quantity": 2,
+            "qtyCase": 0,
+            "rate": 100.0,
+            "discountPercent": 0.0,
+            "discountAmount": 0.0,
+            "taxPercent": 0.0,
+            "taxAmount": 0.0,
+            "amount": 200.0
+          }
+        ],
+        "billDate": "2026-11-01",
+        "deviceId": "602c0d60-899f-4679-8fcb-c7f5a4c0a65e",
+        "clientId": "local-sale-2282215e-17c6-4ce1-80b9-1123daecf3e3"
+      }
+    },
+    {
+      "clientId": "local-purchase-7a54037e-6076-41c6-9888-3ba0ca175e02",
+      "entityType": "purchase",
+      "operation": "create",
+      "payload": {
+        "supplierId": "SUP-001",
+        "billNo": "INV-1",
+        "challanNo": null,
+        "noteNo": null,
+        "payMode": "Credit",
+        "tpNo": null,
+        "tpDate": "2026-11-01",
+        "stNo": null,
+        "discount": 0.0,
+        "vat": 0.0,
+        "stamp": 0.0,
+        "tcs": 0.0,
+        "loadingFreight": 0.0,
+        "netAmount": 600.0,
+        "totalAmount": 600.0,
+        "lineItems": [
+          {
+            "materialId": "B",
+            "batchNo": "B-1",
+            "packing": null,
+            "qty": 12,
+            "rate": 50.0,
+            "disPercent": 0.0,
+            "disAmount": 0.0,
+            "taxPercent": 0.0,
+            "taxAmount": 0.0,
+            "amount": 600.0
+          }
+        ],
+        "billDate": "2026-11-01",
+        "deviceId": "602c0d60-899f-4679-8fcb-c7f5a4c0a65e",
+        "clientId": "local-purchase-7a54037e-6076-41c6-9888-3ba0ca175e02"
+      }
+    }
+  ]
+}
