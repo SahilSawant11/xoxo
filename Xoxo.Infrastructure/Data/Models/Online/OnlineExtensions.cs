@@ -34,3 +34,10 @@ public partial class Material
     public string Manufacturer { get; set; } = "";
     public bool IsActive { get; set; } = true;
 }
+
+public partial class Supplier
+{
+    /// <summary>The counter app's own id for this supplier (e.g. "SUP-001"),
+    /// so purchases synced from a counter can reference it.</summary>
+    public string? ClientId { get; set; }
+}

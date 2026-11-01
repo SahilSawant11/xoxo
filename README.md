@@ -66,7 +66,11 @@ environment variables:
 
 ## Sync protocol
 
-`POST /api/sync/push` with up to 200 queued items:
+1. `POST /api/sync/masters` — upload the counter's categories, manufacturers,
+   packings, permit holders, materials, suppliers (keyed by the counter's own
+   ids) and, on first connection, opening stock. Idempotent; safe every sync.
+   Opening stock only seeds materials the server has no stock for.
+2. `POST /api/sync/push` with up to 200 queued items:
 
 ```json
 { "items": [
@@ -88,6 +92,8 @@ Response, per item: `applied` | `duplicate` | `rejected` (+ `serverId`,
 - **Dates:** send `billDate` — a sale synced days later keeps its real date.
 - **Bill numbers** are unique per counter (two counters may both issue
   `CS-2627-000001`).
+- **Purchases** may reference suppliers by the counter's own id (`SUP-001`),
+  resolved via `Suppliers.ClientId` — upload masters first.
 - **Returns** reference the bill by server id or by the create's clientId.
   Returned bills are kept (`status = returned`, `ReturnedAt/By`) and every
   returned line is logged in `SalesReturnEntries` / `PurchaseReturnEntries`.

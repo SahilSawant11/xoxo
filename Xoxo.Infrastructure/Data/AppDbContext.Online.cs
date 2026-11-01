@@ -115,6 +115,12 @@ public partial class AppDbContext
             e.HasIndex(x => x.BillDate, "IX_PurchaseBills_BillDate");
         });
 
+        modelBuilder.Entity<Supplier>(e =>
+        {
+            e.Property(x => x.ClientId).HasMaxLength(80);
+            e.HasIndex(x => x.ClientId, "UQ_Suppliers_ClientId").IsUnique().HasFilter("[ClientId] IS NOT NULL");
+        });
+
         modelBuilder.Entity<Material>(e =>
         {
             e.Property(x => x.Manufacturer).HasMaxLength(100).HasDefaultValue("");

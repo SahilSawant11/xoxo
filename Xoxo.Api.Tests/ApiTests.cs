@@ -194,4 +194,59 @@ public sealed class ApiTests : IDisposable
         var list = await c.GetFromJsonAsync<JsonElement>("/api/license-holders");
         Assert.Equal("B J RAMA", list[0].GetProperty("name").GetString());
     }
+
+    [Fact]
+    public async Task First_connection_uploads_masters_then_bills_using_counter_ids()
+    {
+        var (c, _) = await _api.RegisterDeviceAsync();
+        var masters = new
+        {
+            categories = new[] { new { name = "Rum", description = (string?)null } },
+            manufacturers = new[] { new { name = "Bacardi", description = (string?)null } },
+            packings = new[] { new { name = "750 ML", description = (string?)null } },
+            licenseHolders = new[] { new { permitNo = "20598", name = "B J RAMA", issuedDate = "24-Mar-2017", whereGranted = "Life Time" } },
+            materials = new[] { new { id = "SKU-1006", barcode = "8901001000066", name = "Bacardi White Rum", category = "Rum", packing = "750 ML", saleRate = 1180m, taxPercent = 18m, manufacturer = "Bacardi", isActive = true } },
+            suppliers = new[] { new { clientId = "SUP-001", name = "Royal Spirits Distributors", address = "Goa", contactNo = (string?)null, email = (string?)null, vatNo = (string?)null, bankDetails = (string?)null, disPercent = 0m, openingBalance = 0m, balanceType = "Credit" } },
+            openingStock = new[] { new { materialId = "SKU-1006", qtyOnHand = 16, reorderLevel = 10 } },
+        };
+        var res = await c.PostAsJsonAsync("/api/sync/masters", masters);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(1, body.GetProperty("openingStockSeeded").GetInt32());
+        Assert.Equal(0, body.GetProperty("errors").GetArrayLength());
+
+        // A purchase referencing the counter's supplier id "SUP-001".
+        var purchase = new
+        {
+            supplierId = "SUP-001", billNo = "INV-1", payMode = "Credit", discount = 0m, vat = 0m, stamp = 0m, tcs = 0m,
+            loadingFreight = 0m, netAmount = 1200m, totalAmount = 1200m,
+            lineItems = new[] { new { materialId = "SKU-1006", batchNo = "-", packing = "12x750", qty = 12, rate = 100m, disPercent = 0m, disAmount = 0m, taxPercent = 0m, taxAmount = 0m, amount = 1200m } },
+        };
+        var r = await Push(c, new { clientId = "local-purchase-x", entityType = "purchase", operation = "create", payload = purchase });
+        Assert.Equal("applied", r[0].GetProperty("status").GetString());
+        Assert.Equal(28, _api.WithDb(db => db.InventoryStocks.Where(s => s.MaterialId == "SKU-1006").Sum(s => s.QtyOnHand)));
+
+        // Uploading masters again is harmless and does not reset stock.
+        var again = await (await c.PostAsJsonAsync("/api/sync/masters", masters)).Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(0, again.GetProperty("openingStockSeeded").GetInt32());
+        Assert.Equal(28, _api.WithDb(db => db.InventoryStocks.Where(s => s.MaterialId == "SKU-1006").Sum(s => s.QtyOnHand)));
+        Assert.Equal(1, _api.WithDb(db => db.Suppliers.Count(s => s.ClientId == "SUP-001")));
+    }
+
+    [Fact]
+    public async Task Barcode_clash_is_reported_not_fatal()
+    {
+        var (c, _) = await _api.RegisterDeviceAsync();
+        var res = await c.PostAsJsonAsync("/api/sync/masters", new
+        {
+            materials = new[]
+            {
+                new { id = "OTHER", barcode = "111", name = "Clash", category = "Whisky", packing = "750 ML", saleRate = 1m, taxPercent = 0m, manufacturer = "", isActive = true },
+                new { id = "NEW", barcode = "222", name = "Fine", category = "Whisky", packing = "750 ML", saleRate = 1m, taxPercent = 0m, manufacturer = "", isActive = true },
+            },
+        });
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(1, body.GetProperty("errors").GetArrayLength());
+        Assert.True(_api.WithDb(db => db.Materials.Any(m => m.Id == "NEW")));
+    }
 }

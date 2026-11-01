@@ -899,6 +899,10 @@ namespace Xoxo.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ClientId")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<string>("ContactNo")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -934,6 +938,10 @@ namespace Xoxo.Infrastructure.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__Supplier__3214EC0740457026");
+
+                    b.HasIndex(new[] { "ClientId" }, "UQ_Suppliers_ClientId")
+                        .IsUnique()
+                        .HasFilter("[ClientId] IS NOT NULL");
 
                     b.ToTable("Suppliers");
                 });

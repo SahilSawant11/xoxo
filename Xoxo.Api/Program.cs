@@ -60,6 +60,7 @@ app.MapGet("/health", async (AppDbContext db) =>
 
 app.MapDeviceEndpoints();
 app.MapSyncEndpoints();
+app.MapMasterSyncEndpoints();
 app.MapSalesEndpoints();
 app.MapPurchaseEndpoints();
 app.MapMasterEndpoints();

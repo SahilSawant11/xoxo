@@ -141,14 +141,15 @@ public sealed class BillingService(AppDbContext db)
     public async Task<ServiceResult> CreatePurchaseAsync(CreatePurchaseRequest request, WriteOrigin origin)
     {
         if (request.LineItems is null || request.LineItems.Count == 0) return ServiceResult.Fail("A purchase needs at least one line item.");
-        if (!await db.Suppliers.AnyAsync(s => s.Id == request.SupplierId)) return ServiceResult.Fail("Supplier does not exist in the API database.");
+        var supplierId = await ResolveSupplierIdAsync(request.SupplierId);
+        if (supplierId is null) return ServiceResult.Fail($"Supplier '{request.SupplierId}' does not exist on the server — sync masters first.");
 
         var now = DateTime.UtcNow;
         var bill = new PurchaseBill
         {
             Id = Guid.NewGuid(),
             BillNo = request.BillNo,
-            SupplierId = request.SupplierId,
+            SupplierId = supplierId.Value,
             ChallanNo = request.ChallanNo,
             NoteNo = request.NoteNo,
             PayMode = request.PayMode,
@@ -228,6 +229,13 @@ public sealed class BillingService(AppDbContext db)
             await AdjustStockAsync(item.MaterialId, item.BatchNo, -item.Qty);
         }
         return new ServiceResult(true, bill.Id, bill.BillNo);
+    }
+
+    private async Task<Guid?> ResolveSupplierIdAsync(string? id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        if (Guid.TryParse(id, out var guid) && await db.Suppliers.AnyAsync(s => s.Id == guid)) return guid;
+        return await db.Suppliers.Where(s => s.ClientId == id).Select(s => (Guid?)s.Id).FirstOrDefaultAsync();
     }
 
     /// <summary>

@@ -33,7 +33,8 @@ public record CreateSaleLineItemRequest(
     decimal Amount
 );
 public record CreatePurchaseRequest(
-    Guid SupplierId,
+    // Server Guid, or the counter's own supplier id (resolved via Supplier.ClientId).
+    string SupplierId,
     string? BillNo,
     string? ChallanNo,
     string? NoteNo,
