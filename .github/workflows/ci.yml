@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Ci_Only_Passw0rd!' }}
+        ports: ["1433:1433"]
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"
+          --health-interval 10s --health-timeout 5s --health-retries 12
+    env:
+      ConnectionStrings__Default: Server=localhost,1433;Database=CasklyCi;User Id=sa;Password=${{ secrets.CI_SQL_PASSWORD || 'Ci_Only_Passw0rd!' }};TrustServerCertificate=True
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore
+      - run: dotnet build --no-restore -warnaserror:false
+      - name: API tests (in-memory SQLite)
+        run: dotnet test --no-build --verbosity normal
+      - name: Apply migrations to a real SQL Server
+        run: |
+          dotnet tool restore
+          dotnet ef database update --project Xoxo.Infrastructure --startup-project Xoxo.Infrastructure --connection "$ConnectionStrings__Default"
+      - name: Boot API against SQL Server and check /health
+        run: |
+          dotnet run --no-build --project Xoxo.Api --urls http://localhost:5080 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5080/health && exit 0; sleep 2; done
+          echo "API did not become healthy"; exit 1

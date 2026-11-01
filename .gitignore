@@ -15,3 +15,6 @@ Thumbs.db
 
 # Local secrets — use appsettings.Development.json or user-secrets for real connection strings
 appsettings.*.local.json
+
+# Local secrets
+.env

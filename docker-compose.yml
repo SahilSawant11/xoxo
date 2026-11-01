@@ -1,0 +1,15 @@
+# Local SQL Server for development:  docker compose up -d
+# The SA password comes from .env (not committed) — copy .env.example.
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64   # runs under Rosetta on Apple Silicon
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "1433:1433"
+    volumes:
+      - caskly-sql:/var/opt/mssql
+volumes:
+  caskly-sql:
